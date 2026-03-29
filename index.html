@@ -464,11 +464,29 @@ function applyFilters(){
 }
 
 // ── RENDER PRODUCTOS ──
+function getProductImg(p){
+  const ext=['webp','jpg','png'];
+  // Intentamos cargar la imagen, con fallback a emoji
+  const id='img-'+p.id;
+  setTimeout(()=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    let i=0;
+    function tryNext(){
+      if(i>=ext.length){ el.outerHTML=`<span style="font-size:52px">${p.icon}</span>`; return; }
+      el.src=`Imag Repuestos/${p.ref}.${ext[i++]}`;
+      el.onerror=tryNext;
+    }
+    tryNext();
+  },0);
+  return `<img id="${id}" src="" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;">`;
+}
+
 function renderProducts(){
   const grid = document.getElementById('productsGrid');
   grid.innerHTML = PRODUCTS.map(p=>`
     <div class="product-card" data-category="${p.category}" data-name="${p.name.toLowerCase()}" data-ref="${p.ref.toLowerCase()}">
-      <div class="product-img"><img src="Imag Repuestos/${p.ref}.webp" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;" onerror="this.onerror=null;this.src='Imag Repuestos/${p.ref}.jpg';this.onerror=function(){this.style.display='none';this.parentElement.innerHTML='<span style=\'font-size:52px\'>${p.icon}</span>';}"></div>
+      <div class="product-img">${getProductImg(p)}</div>
       <div class="product-body">
         <div class="product-category">${{licuadora:'🫙 Licuadora',freidora:'🍟 Freidora',cafetera:'☕ Cafetera',vasos:'🥤 Vasos'}[p.category]}</div>
         <div class="product-name">${p.name}</div>
