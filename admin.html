@@ -732,7 +732,7 @@ function renderProductsTable(){
   tbody.innerHTML=f.map(p=>{
     const sc=p.stock===0?'badge-red':p.stock<5?'badge-yellow':'badge-green';
     const sl=p.stock===0?'Sin stock':p.stock<5?`Bajo (${p.stock})`:`${p.stock} uds`;
-    const img=p.img?`<img src="${p.img}" alt="">`:`<span>${p.icon||'📦'}</span>`;
+    const img=p.img?`<img src="${p.img}" alt="">`:`<img src="Imag Repuestos/${p.ref}.webp" alt="" onerror="this.src='Imag Repuestos/${p.ref}.jpg';this.onerror=function(){this.style.display='none';this.parentElement.innerHTML='<span>${p.icon||'📦'}</span>'}">`;
     return `<tr>
       <td><div class="td-img">${img}</div></td>
       <td><div class="td-name">${p.name}</div><div class="td-ref">Ref: ${p.ref} · ${p.barcode||''}</div></td>
