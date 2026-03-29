@@ -136,6 +136,11 @@ header {
   cursor:pointer; transition:background .2s; white-space:nowrap;
 }
 .add-btn:hover { background:var(--green-dark); }
+.import-badge {
+  display:inline-block; background:#fff3e0; color:#e65100; border:1px solid #ffcc80;
+  border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700;
+  margin-top:6px; line-height:1.4;
+}
 
 /* ── CART OVERLAY ── */
 .cart-overlay {
@@ -337,8 +342,8 @@ const BASE_PRODUCTS = [
 
 function getProducts(){
   const saved = localStorage.getItem('av_products');
-  if(saved) return JSON.parse(saved).filter(p=>p.active && p.stock > 0);
-  return BASE_PRODUCTS.filter(p=>p.active && p.stock > 0);
+  if(saved) return JSON.parse(saved).filter(p=>p.active);
+  return BASE_PRODUCTS.filter(p=>p.active);
 }
 
 const PRODUCTS = getProducts();
@@ -492,9 +497,10 @@ function renderProducts(){
         <div class="product-name">${p.name}</div>
         <div class="product-ref">Ref: ${p.ref} · Cód: ${p.barcode}</div>
         <div class="product-desc">${p.desc}</div>
+        ${p.stock<=0?'<div class="import-badge">✈️ Sin stock — Importación especial: entrega en 20 días</div>':''}
         <div class="product-footer">
           <div class="product-price">${formatPrice(p.price)}</div>
-          <button class="add-btn" onclick="addToCart(${p.id})">+ Agregar</button>
+          <button class="add-btn" onclick="addToCart(${p.id})">${p.stock<=0?'📦 Pedido especial':'+ Agregar'}</button>
         </div>
       </div>
     </div>
