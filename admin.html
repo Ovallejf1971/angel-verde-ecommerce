@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Angel Verde</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --green:#2e7d32; --green-light:#4caf50; --green-dark:#1b5e20;
+  --green-bg:#f1f8e9; --white:#fff; --gray:#f5f5f5;
+  --text:#3a3a3a; --muted:#757575; --border:#e0e0e0;
+  --red:#c62828; --red-light:#ffebee; --yellow:#f9a825;
+  --blue:#1565c0; --blue-light:#e3f2fd;
+}
+body { font-family:'Roboto',sans-serif; color:var(--text); background:var(--gray); min-height:100vh; }
+
+/* ── SCREENS ── */
+.screen { position:fixed; inset:0; background:var(--green-dark); display:flex; align-items:center; justify-content:center; z-index:999; padding:20px; }
+.screen.hidden { display:none; }
+#screenApp { position:static; background:none; display:block; }
+#screenApp.hidden { display:none; }
+
+/* ── LOGIN / MFA BOX ── */
+.auth-box {
+  background:var(--white); border-radius:16px; padding:40px;
+  width:min(400px,100%); box-shadow:0 8px 32px rgba(0,0,0,.3);
+}
+.auth-logo { font-size:48px; text-align:center; margin-bottom:8px; }
+.auth-box h1 { font-family:'Roboto Slab',serif; color:var(--green-dark); text-align:center; margin-bottom:4px; }
+.auth-box .subtitle { color:var(--muted); font-size:13px; text-align:center; margin-bottom:28px; }
+.auth-box .field-label { display:block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:5px; margin-top:14px; }
+.auth-box input {
+  width:100%; border:2px solid var(--border); border-radius:8px;
+  padding:11px 14px; font-size:15px; outline:none; transition:border .2s;
+}
+.auth-box input:focus { border-color:var(--green); }
+.auth-submit {
+  width:100%; background:var(--green); color:var(--white); border:none;
+  border-radius:8px; padding:13px; font-size:15px; font-weight:700;
+  cursor:pointer; transition:background .2s; margin-top:20px;
+}
+.auth-submit:hover { background:var(--green-dark); }
+.auth-error { color:var(--red); font-size:13px; margin-top:10px; text-align:center; display:none; }
+.auth-back { background:none; border:none; color:var(--muted); font-size:13px; cursor:pointer; margin-top:12px; width:100%; text-align:center; }
+.auth-back:hover { color:var(--text); }
+.mfa-info { background:var(--blue-light); border-radius:8px; padding:12px; font-size:13px; color:var(--blue); margin-bottom:4px; line-height:1.5; }
+.mfa-code-input { letter-spacing:10px; font-size:22px; text-align:center; font-weight:700; }
+
+/* ── HEADER ── */
+header { background:var(--green-dark); position:sticky; top:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,.3); }
+.header-inner { max-width:1300px; margin:0 auto; padding:10px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.logo-area { display:flex; align-items:center; gap:10px; text-decoration:none; flex-shrink:0; }
+.logo-icon { width:38px; height:38px; background:var(--green-light); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:18px; }
+.logo-text .brand { font-family:'Roboto Slab',serif; font-size:17px; color:var(--white); letter-spacing:1px; }
+.logo-text .sub { font-size:10px; color:rgba(255,255,255,.65); letter-spacing:2px; text-transform:uppercase; }
+
+/* ── TABS ── */
+.header-tabs { display:flex; gap:4px; }
+.tab-btn {
+  padding:7px 16px; border-radius:8px; border:none; font-size:13px; font-weight:700;
+  cursor:pointer; color:rgba(255,255,255,.7); background:rgba(255,255,255,.1);
+  transition:all .2s;
+}
+.tab-btn:hover { background:rgba(255,255,255,.2); color:var(--white); }
+.tab-btn.active { background:var(--green-light); color:var(--white); }
+
+.user-menu { display:flex; align-items:center; gap:10px; }
+.user-email { color:rgba(255,255,255,.8); font-size:13px; }
+.btn { padding:7px 14px; border-radius:8px; border:none; font-size:13px; font-weight:700; cursor:pointer; transition:all .2s; }
+.btn-outline { background:rgba(255,255,255,.15); color:var(--white); border:1px solid rgba(255,255,255,.3); }
+.btn-outline:hover { background:rgba(255,255,255,.25); }
+.btn-green { background:var(--green-light); color:var(--white); }
+.btn-green:hover { background:var(--green); }
+.btn-red { background:var(--red); color:var(--white); }
+.btn-red:hover { background:#b71c1c; }
+.btn-blue { background:var(--blue); color:var(--white); }
+.btn-blue:hover { background:#0d47a1; }
+.btn-yellow { background:var(--yellow); color:#333; }
+
+/* ── MAIN ── */
+main { max-width:1300px; margin:0 auto; padding:24px 20px; }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+/* ── STATS ── */
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin-bottom:24px; }
+.stat-card { background:var(--white); border-radius:12px; padding:18px 20px; box-shadow:0 2px 8px rgba(0,0,0,.07); border-left:4px solid var(--green); }
+.stat-card.red { border-color:var(--red); }
+.stat-card.yellow { border-color:var(--yellow); }
+.stat-card.blue { border-color:var(--blue); }
+.stat-value { font-family:'Roboto Slab',serif; font-size:26px; font-weight:700; color:var(--green-dark); }
+.stat-card.red .stat-value { color:var(--red); }
+.stat-card.yellow .stat-value { color:var(--yellow); }
+.stat-card.blue .stat-value { color:var(--blue); }
+.stat-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:3px; }
+
+/* ── TOOLBAR ── */
+.toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+.toolbar-left { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.search-input { border:2px solid var(--border); border-radius:8px; padding:8px 13px; font-size:14px; width:200px; outline:none; transition:border .2s; }
+.search-input:focus { border-color:var(--green); }
+.filter-select { border:2px solid var(--border); border-radius:8px; padding:8px 11px; font-size:14px; outline:none; background:var(--white); cursor:pointer; }
+
+/* ── TABLE ── */
+.table-wrap { background:var(--white); border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,.07); overflow:auto; }
+table { width:100%; border-collapse:collapse; min-width:600px; }
+thead { background:var(--green-bg); }
+th { padding:11px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--green-dark); font-weight:700; white-space:nowrap; }
+td { padding:11px 16px; border-top:1px solid var(--border); vertical-align:middle; }
+tr:hover td { background:#fafafa; }
+.td-img { width:52px; height:52px; border-radius:8px; background:var(--green-bg); display:flex; align-items:center; justify-content:center; font-size:26px; overflow:hidden; }
+.td-img img { width:100%; height:100%; object-fit:cover; }
+.td-name { font-weight:700; font-size:14px; }
+.td-ref { font-size:11px; color:var(--muted); }
+.td-price { font-family:'Roboto Slab',serif; font-weight:700; color:var(--green-dark); white-space:nowrap; }
+.badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
+.badge-green { background:var(--green-bg); color:var(--green-dark); }
+.badge-red { background:var(--red-light); color:var(--red); }
+.badge-yellow { background:#fff8e1; color:#f57f17; }
+.badge-blue { background:var(--blue-light); color:var(--blue); }
+.badge-gray { background:#eeeeee; color:#616161; }
+.actions-td { display:flex; gap:6px; flex-wrap:wrap; }
+.act-btn { padding:5px 10px; border-radius:6px; border:none; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; }
+.act-edit { background:var(--green-bg); color:var(--green-dark); }
+.act-edit:hover { background:var(--green); color:var(--white); }
+.act-del { background:var(--red-light); color:var(--red); }
+.act-del:hover { background:var(--red); color:var(--white); }
+.act-blue { background:var(--blue-light); color:var(--blue); }
+.act-blue:hover { background:var(--blue); color:var(--white); }
+
+/* ── MODAL ── */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:500; display:none; align-items:center; justify-content:center; padding:20px; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--white); border-radius:16px; width:min(560px,100%); max-height:90vh; overflow-y:auto; box-shadow:0 8px 40px rgba(0,0,0,.25); }
+.modal-sm { width:min(420px,100%); }
+.modal-header { background:var(--green-dark); color:var(--white); padding:15px 20px; display:flex; align-items:center; justify-content:space-between; border-radius:16px 16px 0 0; position:sticky; top:0; }
+.modal-header h2 { font-family:'Roboto Slab',serif; font-size:17px; }
+.modal-close { background:none; border:none; color:var(--white); font-size:22px; cursor:pointer; line-height:1; }
+.modal-body { padding:22px; }
+.modal-footer { display:flex; gap:10px; justify-content:flex-end; padding:0 22px 22px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.form-group { margin-bottom:14px; }
+.form-group.full { grid-column:1/-1; }
+.form-group label { display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:5px; }
+.form-group input, .form-group select, .form-group textarea {
+  width:100%; border:2px solid var(--border); border-radius:8px;
+  padding:9px 13px; font-size:14px; font-family:'Roboto',sans-serif; outline:none; transition:border .2s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--green); }
+.form-group textarea { resize:vertical; min-height:75px; }
+.img-preview {
+  width:100%; height:130px; background:var(--green-bg); border-radius:8px;
+  border:2px dashed var(--border); display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:6px; cursor:pointer; transition:border .2s; overflow:hidden;
+}
+.img-preview:hover { border-color:var(--green); }
+.img-preview img { width:100%; height:100%; object-fit:contain; }
+.section-divider { border:none; border-top:2px solid var(--border); margin:18px 0; }
+.hint { font-size:12px; color:var(--muted); margin-top:4px; line-height:1.4; }
+
+/* ── MFA SETUP ── */
+.mfa-setup-box { text-align:center; }
+.mfa-setup-box canvas { border-radius:8px; border:3px solid var(--green-bg); margin:12px auto; display:block; }
+.mfa-secret { font-family:monospace; font-size:14px; background:var(--gray); border-radius:6px; padding:8px 12px; letter-spacing:3px; word-break:break-all; margin:8px 0; }
+.steps { text-align:left; list-style:none; counter-reset:step; }
+.steps li { counter-increment:step; padding:6px 0 6px 32px; position:relative; font-size:13px; color:var(--text); }
+.steps li::before { content:counter(step); position:absolute; left:0; top:6px; width:22px; height:22px; background:var(--green); color:var(--white); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+
+/* ── SETTINGS TAB ── */
+.settings-card { background:var(--white); border-radius:12px; padding:22px; box-shadow:0 2px 8px rgba(0,0,0,.07); margin-bottom:18px; }
+.settings-card h3 { font-family:'Roboto Slab',serif; font-size:16px; color:var(--green-dark); margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--green-bg); }
+
+/* ── CONFIRM ── */
+.confirm-box { background:var(--white); border-radius:12px; padding:28px; width:min(360px,90vw); text-align:center; box-shadow:0 8px 32px rgba(0,0,0,.25); }
+.confirm-box h3 { font-family:'Roboto Slab',serif; margin-bottom:8px; }
+.confirm-box p { color:var(--muted); font-size:14px; margin-bottom:20px; line-height:1.5; }
+.confirm-actions { display:flex; gap:10px; justify-content:center; }
+
+/* ── TOAST ── */
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--green-dark); color:var(--white); padding:11px 22px; border-radius:24px; font-weight:700; font-size:14px; transition:transform .3s; z-index:600; box-shadow:0 4px 16px rgba(0,0,0,.3); }
+.toast.show { transform:translateX(-50%) translateY(0); }
+.toast.error { background:var(--red); }
+
+@media(max-width:640px){
+  .form-row { grid-template-columns:1fr; }
+  .stats { grid-template-columns:1fr 1fr; }
+  .header-tabs { display:none; }
+  .user-email { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ PANTALLA LOGIN ══ -->
+<div class="screen" id="screenLogin">
+  <div class="auth-box">
+    <div class="auth-logo">🌿</div>
+    <h1>Angel Verde</h1>
+    <p class="subtitle">Panel de Administración</p>
+    <label class="field-label">Correo electrónico</label>
+    <input type="email" id="loginEmail" placeholder="admin@angelverde.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()">
+    <label class="field-label">Contraseña</label>
+    <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="auth-submit" onclick="doLogin()">Ingresar</button>
+    <p class="auth-error" id="loginError">Correo o contraseña incorrectos</p>
+  </div>
+</div>
+
+<!-- ══ PANTALLA MFA ══ -->
+<div class="screen hidden" id="screenMFA">
+  <div class="auth-box">
+    <div class="auth-logo">🔐</div>
+    <h1>Verificación</h1>
+    <p class="subtitle">Autenticación en 2 pasos</p>
+    <div class="mfa-info">Abrí tu app de autenticación (Google Authenticator, Authy) e ingresá el código de 6 dígitos.</div>
+    <label class="field-label" style="margin-top:14px;">Código de verificación</label>
+    <input type="text" id="mfaCode" class="mfa-code-input" placeholder="000000" maxlength="6" inputmode="numeric" pattern="[0-9]*" onkeydown="if(event.key==='Enter')doVerifyMFA()">
+    <button class="auth-submit" onclick="doVerifyMFA()">Verificar</button>
+    <p class="auth-error" id="mfaError">Código incorrecto. Intentá de nuevo.</p>
+    <button class="auth-back" onclick="backToLogin()">← Volver al inicio</button>
+  </div>
+</div>
+
+<!-- ══ APP PRINCIPAL ══ -->
+<div id="screenApp" class="hidden">
+
+  <header>
+    <div class="header-inner">
+      <a class="logo-area" href="index.html" target="_blank">
+        <div class="logo-icon">🌿</div>
+        <div class="logo-text">
+          <div class="brand">Angel Verde</div>
+          <div class="sub">Admin</div>
+        </div>
+      </a>
+
+      <div class="header-tabs">
+        <button class="tab-btn active" onclick="showTab('products',this)">📦 Productos</button>
+        <button class="tab-btn" onclick="showTab('users',this)">👥 Usuarios</button>
+        <button class="tab-btn" onclick="showTab('settings',this)">⚙️ Configuración</button>
+      </div>
+
+      <div class="user-menu">
+        <span class="user-email" id="headerEmail"></span>
+        <button class="btn btn-outline" onclick="openProfile()">Mi Perfil</button>
+        <a href="index.html" target="_blank"><button class="btn btn-outline">🛒 Tienda</button></a>
+        <button class="btn btn-outline" onclick="doLogout()">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ── TAB PRODUCTOS ── -->
+    <div class="tab-content active" id="tabProducts">
+      <div class="stats">
+        <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Productos totales</div></div>
+        <div class="stat-card yellow"><div class="stat-value" id="statLow">0</div><div class="stat-label">Stock bajo (&lt;5)</div></div>
+        <div class="stat-card red"><div class="stat-value" id="statOut">0</div><div class="stat-label">Sin stock</div></div>
+        <div class="stat-card"><div class="stat-value" id="statCats">0</div><div class="stat-label">Categorías</div></div>
+      </div>
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <input class="search-input" type="text" placeholder="🔍 Buscar producto..." id="prodSearch" oninput="renderProductsTable()">
+          <select class="filter-select" id="prodCatFilter" onchange="renderProductsTable()">
+            <option value="">Todas las categorías</option>
+            <option value="licuadora">Licuadoras</option>
+            <option value="freidora">Freidoras</option>
+            <option value="cafetera">Cafeteras</option>
+            <option value="vasos">Vasos</option>
+          </select>
+        </div>
+        <button class="btn btn-green" onclick="openProductModal()">+ Nuevo Producto</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Imagen</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Activo</th><th>Acciones</th></tr></thead>
+          <tbody id="productsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── TAB USUARIOS ── -->
+    <div class="tab-content" id="tabUsers">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <input class="search-input" type="text" placeholder="🔍 Buscar usuario..." id="userSearch" oninput="renderUsersTable()">
+        </div>
+        <button class="btn btn-green" onclick="openUserModal()">+ Nuevo Usuario</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Email</th><th>Rol</th><th>MFA</th><th>Creado</th><th>Acciones</th></tr></thead>
+          <tbody id="usersTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── TAB CONFIGURACIÓN ── -->
+    <div class="tab-content" id="tabSettings">
+      <div class="settings-card">
+        <h3>💬 WhatsApp para pedidos</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Número (con código de país)</label>
+            <input type="text" id="waPhone" placeholder="573001234567" oninput="saveWaPhone()">
+          </div>
+          <div class="form-group" style="align-self:end">
+            <p class="hint">Formato: <b>57</b> + número sin cero.<br>Ej: 310 123 4567 → <b>573101234567</b></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ MODAL PRODUCTO ══ -->
+<div class="modal-overlay" id="modalProduct" onclick="if(event.target===this)closeProductModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="productModalTitle">Nuevo Producto</h2>
+      <button class="modal-close" onclick="closeProductModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group full">
+        <label>Imagen del producto</label>
+        <div class="img-preview" id="imgPreview" onclick="document.getElementById('imgInput').click()">
+          <span id="imgPlaceholder" style="font-size:34px">📷</span>
+          <span style="font-size:12px;color:var(--muted)">Click para subir imagen</span>
+        </div>
+        <input type="file" id="imgInput" accept="image/*" style="display:none" onchange="handleImage(event)">
+        <p class="hint">JPG, PNG, WEBP — Recomendado: 500×500 px</p>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" id="fName" placeholder="Ej: Cuchillas Licuadora BL610">
+        </div>
+        <div class="form-group">
+          <label>Referencia *</label>
+          <input type="text" id="fRef" placeholder="Ej: 311KKU">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Código de barras</label>
+          <input type="text" id="fBarcode" placeholder="622356602983">
+        </div>
+        <div class="form-group">
+          <label>Categoría *</label>
+          <select id="fCategory">
+            <option value="licuadora">Licuadora</option>
+            <option value="freidora">Freidora</option>
+            <option value="cafetera">Cafetera</option>
+            <option value="vasos">Vasos</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Precio COP (con IVA) *</label>
+          <input type="number" id="fPrice" placeholder="39900" min="0">
+        </div>
+        <div class="form-group">
+          <label>Stock disponible</label>
+          <input type="number" id="fStock" placeholder="10" min="0" value="10">
+        </div>
+      </div>
+      <div class="form-group full">
+        <label>Descripción</label>
+        <textarea id="fDesc" placeholder="Descripción, compatibilidad, características..."></textarea>
+      </div>
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;text-transform:none;font-size:14px;font-weight:400;">
+          <input type="checkbox" id="fActive" checked style="width:auto;"> Producto activo (visible en tienda)
+        </label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" style="color:var(--text)" onclick="closeProductModal()">Cancelar</button>
+      <button class="btn btn-green" onclick="saveProduct()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL USUARIO ══ -->
+<div class="modal-overlay" id="modalUser" onclick="if(event.target===this)closeUserModal()">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2 id="userModalTitle">Nuevo Usuario</h2>
+      <button class="modal-close" onclick="closeUserModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Correo electrónico *</label>
+        <input type="email" id="uEmail" placeholder="usuario@angelverde.com">
+      </div>
+      <div class="form-group">
+        <label>Rol</label>
+        <select id="uRole">
+          <option value="admin">Administrador</option>
+          <option value="editor">Editor</option>
+        </select>
+      </div>
+      <hr class="section-divider">
+      <div class="form-group">
+        <label id="uPwdLabel">Contraseña *</label>
+        <input type="password" id="uPassword" placeholder="Mínimo 8 caracteres">
+      </div>
+      <div class="form-group">
+        <label>Confirmar contraseña</label>
+        <input type="password" id="uPasswordConfirm" placeholder="Repetir contraseña">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" style="color:var(--text)" onclick="closeUserModal()">Cancelar</button>
+      <button class="btn btn-green" id="userSaveBtn" onclick="saveUser()">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL MI PERFIL ══ -->
+<div class="modal-overlay" id="modalProfile" onclick="if(event.target===this)closeProfile()">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2>👤 Mi Perfil</h2>
+      <button class="modal-close" onclick="closeProfile()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Sesión: <b id="profileEmail"></b></p>
+
+      <h4 style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--green-dark);">🔑 Cambiar contraseña</h4>
+      <div class="form-group">
+        <label>Contraseña actual</label>
+        <input type="password" id="pCurrentPwd" placeholder="••••••••">
+      </div>
+      <div class="form-group">
+        <label>Nueva contraseña</label>
+        <input type="password" id="pNewPwd" placeholder="Mínimo 8 caracteres">
+      </div>
+      <div class="form-group">
+        <label>Confirmar nueva contraseña</label>
+        <input type="password" id="pConfirmPwd" placeholder="Repetir nueva contraseña">
+      </div>
+      <button class="btn btn-green" style="width:100%;padding:10px;" onclick="changePassword()">Cambiar contraseña</button>
+
+      <hr class="section-divider">
+
+      <h4 style="font-size:14px;font-weight:700;margin-bottom:10px;color:var(--green-dark);">🔐 Autenticación en 2 pasos (MFA)</h4>
+      <div id="mfaStatusArea"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" style="color:var(--text)" onclick="closeProfile()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL CONFIGURAR MFA ══ -->
+<div class="modal-overlay" id="modalMFASetup" onclick="if(event.target===this)closeMFASetup()">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2>🔐 Configurar MFA</h2>
+      <button class="modal-close" onclick="closeMFASetup()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="mfa-setup-box">
+        <ol class="steps">
+          <li>Instalá <b>Google Authenticator</b> o <b>Authy</b> en tu celular.</li>
+          <li>Escaneá el código QR con la app.</li>
+          <li>Ingresá el código de 6 dígitos que aparece para verificar.</li>
+        </ol>
+        <canvas id="mfaQR" style="margin-top:16px;"></canvas>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:4px;">O ingresá esta clave manualmente:</p>
+        <div class="mfa-secret" id="mfaSecretDisplay"></div>
+      </div>
+      <div class="form-group" style="margin-top:16px;">
+        <label>Código de verificación</label>
+        <input type="text" id="mfaVerifyCode" class="mfa-code-input" placeholder="000000" maxlength="6" inputmode="numeric">
+        <p class="hint">Ingresá el código de tu app para activar el MFA.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" style="color:var(--text)" onclick="closeMFASetup()">Cancelar</button>
+      <button class="btn btn-green" onclick="verifyAndEnableMFA()">✅ Activar MFA</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL DESACTIVAR MFA ══ -->
+<div class="modal-overlay" id="modalMFADisable" onclick="if(event.target===this)closeMFADisable()">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2>⚠️ Desactivar MFA</h2>
+      <button class="modal-close" onclick="closeMFADisable()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:var(--text);margin-bottom:16px;line-height:1.5;">Para desactivar el MFA ingresá el código actual de tu app autenticadora.</p>
+      <div class="form-group">
+        <label>Código MFA actual</label>
+        <input type="text" id="mfaDisableCode" class="mfa-code-input" placeholder="000000" maxlength="6" inputmode="numeric">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" style="color:var(--text)" onclick="closeMFADisable()">Cancelar</button>
+      <button class="btn btn-red" onclick="confirmDisableMFA()">Desactivar MFA</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM ══ -->
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <h3 id="confirmTitle">¿Confirmar?</h3>
+    <p id="confirmText"></p>
+    <div class="confirm-actions">
+      <button class="btn btn-outline" style="color:var(--text)" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn btn-red" id="confirmOkBtn" onclick="">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  CRYPTO HELPERS
+// ══════════════════════════════════════════
+function genSalt(){
+  return Array.from(crypto.getRandomValues(new Uint8Array(16))).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function hashPwd(pwd, salt){
+  const enc = new TextEncoder();
+  const buf = await crypto.subtle.digest('SHA-256', enc.encode(salt + pwd));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ══════════════════════════════════════════
+//  TOTP
+// ══════════════════════════════════════════
+const B32 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+
+function b32Encode(bytes){
+  let r='', bits=0, val=0;
+  for(const b of bytes){ val=(val<<8)|b; bits+=8; while(bits>=5){ bits-=5; r+=B32[(val>>bits)&31]; } }
+  if(bits>0) r+=B32[(val<<(5-bits))&31];
+  return r;
+}
+function b32Decode(s){
+  const clean=s.toUpperCase().replace(/[^A-Z2-7]/g,'');
+  const out=[]; let bits=0,val=0;
+  for(const c of clean){ val=(val<<5)|B32.indexOf(c); bits+=5; if(bits>=8){ bits-=8; out.push((val>>bits)&255); } }
+  return new Uint8Array(out);
+}
+function genTOTPSecret(){
+  return b32Encode(crypto.getRandomValues(new Uint8Array(20)));
+}
+async function getTOTPCode(secret, offset=0){
+  const key=b32Decode(secret);
+  const ctr=Math.floor(Date.now()/30000)+offset;
+  const buf=new ArrayBuffer(8);
+  new DataView(buf).setUint32(4,ctr>>>0,false);
+  const ck=await crypto.subtle.importKey('raw',key,{name:'HMAC',hash:'SHA-1'},false,['sign']);
+  const sig=new Uint8Array(await crypto.subtle.sign('HMAC',ck,buf));
+  const off=sig[19]&0x0f;
+  const code=((sig[off]&0x7f)<<24)|((sig[off+1]&0xff)<<16)|((sig[off+2]&0xff)<<8)|(sig[off+3]&0xff);
+  return String(code%1000000).padStart(6,'0');
+}
+async function verifyTOTP(secret, token){
+  for(const o of [-1,0,1]){ if(await getTOTPCode(secret,o)===token) return true; }
+  return false;
+}
+function totpQRUrl(email, secret){
+  return `otpauth://totp/AngelVerde:${encodeURIComponent(email)}?secret=${secret}&issuer=AngelVerde`;
+}
+
+// ══════════════════════════════════════════
+//  STORAGE
+// ══════════════════════════════════════════
+const K = { users:'av_users', session:'av_session', products:'av_products', wa:'av_waphone' };
+
+function getUsers(){ return JSON.parse(localStorage.getItem(K.users)||'[]'); }
+function saveUsers(u){ localStorage.setItem(K.users,JSON.stringify(u)); }
+function getProducts(){
+  const s=localStorage.getItem(K.products);
+  return s ? JSON.parse(s) : BASE_PRODUCTS;
+}
+function saveProducts(p){ localStorage.setItem(K.products,JSON.stringify(p)); }
+function getSession(){ return JSON.parse(localStorage.getItem(K.session)||'null'); }
+function saveSession(u){ localStorage.setItem(K.session,JSON.stringify({email:u.email,role:u.role})); }
+function clearSession(){ localStorage.removeItem(K.session); }
+
+// ══════════════════════════════════════════
+//  INIT DEFAULT ADMIN
+// ══════════════════════════════════════════
+async function ensureDefaultUser(){
+  if(getUsers().length===0){
+    const salt=genSalt();
+    const hash=await hashPwd('angelVerde2025',salt);
+    saveUsers([{
+      id:1, email:'admin@angelverde.com',
+      passwordHash:hash, salt,
+      mfaEnabled:false, mfaSecret:'', mfaVerified:false,
+      role:'admin', createdAt:new Date().toISOString()
+    }]);
+  }
+}
+
+// ══════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════
+let mfaPendingUser = null;
+
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pwd=document.getElementById('loginPassword').value;
+  const err=document.getElementById('loginError');
+  err.style.display='none';
+  if(!email||!pwd){ err.textContent='Completá todos los campos.'; err.style.display='block'; return; }
+  const users=getUsers();
+  const user=users.find(u=>u.email.toLowerCase()===email);
+  if(!user){ err.style.display='block'; return; }
+  const hash=await hashPwd(pwd,user.salt);
+  if(hash!==user.passwordHash){ err.style.display='block'; return; }
+  if(user.mfaEnabled){
+    mfaPendingUser=user;
+    document.getElementById('mfaCode').value='';
+    document.getElementById('mfaError').style.display='none';
+    document.getElementById('screenLogin').classList.add('hidden');
+    document.getElementById('screenMFA').classList.remove('hidden');
+    setTimeout(()=>document.getElementById('mfaCode').focus(),100);
+  } else {
+    loginSuccess(user);
+  }
+}
+
+async function doVerifyMFA(){
+  const code=document.getElementById('mfaCode').value.trim();
+  const err=document.getElementById('mfaError');
+  err.style.display='none';
+  if(!mfaPendingUser) return backToLogin();
+  if(code.length!==6||!/^\d+$/.test(code)){ err.textContent='Ingresá exactamente 6 dígitos.'; err.style.display='block'; return; }
+  const ok=await verifyTOTP(mfaPendingUser.mfaSecret, code);
+  if(!ok){ err.style.display='block'; return; }
+  loginSuccess(mfaPendingUser);
+  mfaPendingUser=null;
+}
+
+function loginSuccess(user){
+  saveSession(user);
+  currentUser=user;
+  document.getElementById('screenLogin').classList.add('hidden');
+  document.getElementById('screenMFA').classList.add('hidden');
+  document.getElementById('screenApp').classList.remove('hidden');
+  document.getElementById('headerEmail').textContent=user.email;
+  initApp();
+}
+
+function backToLogin(){
+  mfaPendingUser=null;
+  document.getElementById('screenMFA').classList.add('hidden');
+  document.getElementById('screenLogin').classList.remove('hidden');
+  document.getElementById('loginPassword').value='';
+}
+
+function doLogout(){
+  clearSession();
+  location.reload();
+}
+
+// ══════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════
+function showTab(name, btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='users') renderUsersTable();
+  if(name==='settings'){ const p=localStorage.getItem(K.wa)||''; document.getElementById('waPhone').value=p; }
+}
+function saveWaPhone(){ localStorage.setItem(K.wa, document.getElementById('waPhone').value.trim()); }
+
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+let toastTimer;
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show'+(type?' '+type:'');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ══════════════════════════════════════════
+//  CONFIRM DIALOG
+// ══════════════════════════════════════════
+function showConfirm(title,text,onOk){
+  document.getElementById('confirmTitle').textContent=title;
+  document.getElementById('confirmText').textContent=text;
+  document.getElementById('confirmOkBtn').onclick=()=>{ closeConfirm(); onOk(); };
+  document.getElementById('confirmOverlay').classList.add('open');
+}
+function closeConfirm(){ document.getElementById('confirmOverlay').classList.remove('open'); }
+
+// ══════════════════════════════════════════
+//  PRODUCTS (tabla admin)
+// ══════════════════════════════════════════
+const CAT_LABELS={licuadora:'🫙 Licuadora',freidora:'🍟 Freidora',cafetera:'☕ Cafetera',vasos:'🥤 Vasos'};
+
+function updateProductStats(products){
+  document.getElementById('statTotal').textContent=products.length;
+  document.getElementById('statLow').textContent=products.filter(p=>p.stock>0&&p.stock<5).length;
+  document.getElementById('statOut').textContent=products.filter(p=>p.stock===0).length;
+  document.getElementById('statCats').textContent=new Set(products.map(p=>p.category)).size;
+}
+
+function renderProductsTable(){
+  const products=getProducts();
+  const q=document.getElementById('prodSearch').value.toLowerCase();
+  const cat=document.getElementById('prodCatFilter').value;
+  updateProductStats(products);
+  const f=products.filter(p=>{
+    return (!q||(p.name.toLowerCase().includes(q)||p.ref.toLowerCase().includes(q)))
+        && (!cat||p.category===cat);
+  });
+  const tbody=document.getElementById('productsTable');
+  if(!f.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px">Sin resultados</td></tr>'; return; }
+  tbody.innerHTML=f.map(p=>{
+    const sc=p.stock===0?'badge-red':p.stock<5?'badge-yellow':'badge-green';
+    const sl=p.stock===0?'Sin stock':p.stock<5?`Bajo (${p.stock})`:`${p.stock} uds`;
+    const img=p.img?`<img src="${p.img}" alt="">`:`<span>${p.icon||'📦'}</span>`;
+    return `<tr>
+      <td><div class="td-img">${img}</div></td>
+      <td><div class="td-name">${p.name}</div><div class="td-ref">Ref: ${p.ref} · ${p.barcode||''}</div></td>
+      <td><span class="badge badge-green">${CAT_LABELS[p.category]||p.category}</span></td>
+      <td class="td-price">$ ${p.price.toLocaleString('es-CO')}</td>
+      <td><span class="badge ${sc}">${sl}</span></td>
+      <td><span style="font-size:17px">${p.active?'✅':'⛔'}</span></td>
+      <td><div class="actions-td">
+        <button class="act-btn act-edit" onclick="openProductModal(${p.id})">✏️ Editar</button>
+        <button class="act-btn act-del" onclick="showConfirm('Eliminar producto','¿Eliminar &quot;${p.name.replace(/'/g,"\\'")}\\&quot;?',()=>deleteProduct(${p.id}))">🗑️</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+let editProductId=null, currentImgData='';
+
+function openProductModal(id=null){
+  editProductId=id; currentImgData='';
+  document.getElementById('productModalTitle').textContent=id?'Editar Producto':'Nuevo Producto';
+  if(id){
+    const p=getProducts().find(x=>x.id===id); if(!p) return;
+    document.getElementById('fName').value=p.name;
+    document.getElementById('fRef').value=p.ref;
+    document.getElementById('fBarcode').value=p.barcode||'';
+    document.getElementById('fCategory').value=p.category;
+    document.getElementById('fPrice').value=p.price;
+    document.getElementById('fStock').value=p.stock;
+    document.getElementById('fDesc').value=p.desc||'';
+    document.getElementById('fActive').checked=p.active;
+    currentImgData=p.img||'';
+    refreshImgPreview(p.img||'', p.icon||'📦');
+  } else {
+    ['fName','fRef','fBarcode','fDesc'].forEach(f=>document.getElementById(f).value='');
+    document.getElementById('fCategory').value='licuadora';
+    document.getElementById('fPrice').value='';
+    document.getElementById('fStock').value='10';
+    document.getElementById('fActive').checked=true;
+    refreshImgPreview('','📷');
+  }
+  document.getElementById('modalProduct').classList.add('open');
+}
+function closeProductModal(){ document.getElementById('modalProduct').classList.remove('open'); document.getElementById('imgInput').value=''; }
+function refreshImgPreview(img, fallback){
+  const el=document.getElementById('imgPreview');
+  el.innerHTML=img?`<img src="${img}" alt="">`:`<span style="font-size:34px">${fallback}</span><span style="font-size:12px;color:var(--muted)">Click para subir imagen</span>`;
+  el.onclick=()=>document.getElementById('imgInput').click();
+}
+function handleImage(e){
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{ currentImgData=ev.target.result; refreshImgPreview(currentImgData,''); };
+  r.readAsDataURL(f);
+}
+function saveProduct(){
+  const name=document.getElementById('fName').value.trim();
+  const ref=document.getElementById('fRef').value.trim();
+  const price=parseInt(document.getElementById('fPrice').value);
+  if(!name||!ref||!price){ showToast('Completá los campos obligatorios (*)','error'); return; }
+  const products=getProducts();
+  const data={name,ref,barcode:document.getElementById('fBarcode').value.trim(),category:document.getElementById('fCategory').value,price,stock:parseInt(document.getElementById('fStock').value)||0,desc:document.getElementById('fDesc').value.trim(),active:document.getElementById('fActive').checked,img:currentImgData,icon:'📦'};
+  if(editProductId){
+    const i=products.findIndex(p=>p.id===editProductId);
+    if(i>=0) products[i]={...products[i],...data};
+  } else {
+    products.push({id:Math.max(0,...products.map(p=>p.id))+1,...data});
+  }
+  saveProducts(products); closeProductModal(); renderProductsTable();
+  showToast(editProductId?'✅ Producto actualizado':'✅ Producto agregado');
+}
+function deleteProduct(id){
+  saveProducts(getProducts().filter(p=>p.id!==id));
+  renderProductsTable(); showToast('🗑️ Producto eliminado');
+}
+
+// ══════════════════════════════════════════
+//  USERS (tabla admin)
+// ══════════════════════════════════════════
+function renderUsersTable(){
+  const users=getUsers();
+  const q=document.getElementById('userSearch').value.toLowerCase();
+  const f=users.filter(u=>!q||u.email.toLowerCase().includes(q));
+  const tbody=document.getElementById('usersTable');
+  if(!f.length){ tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:28px">Sin usuarios</td></tr>'; return; }
+  tbody.innerHTML=f.map(u=>{
+    const roleBadge=u.role==='admin'?'badge-blue':'badge-gray';
+    const roleLabel=u.role==='admin'?'Administrador':'Editor';
+    const mfaBadge=u.mfaEnabled?'badge-green':'badge-gray';
+    const mfaLabel=u.mfaEnabled?'✅ Activo':'⛔ Inactivo';
+    const date=new Date(u.createdAt).toLocaleDateString('es-CO');
+    const isSelf=(currentUser&&u.email===currentUser.email);
+    return `<tr>
+      <td><b>${u.email}</b>${isSelf?' <span style="font-size:11px;color:var(--green)">(tú)</span>':''}</td>
+      <td><span class="badge ${roleBadge}">${roleLabel}</span></td>
+      <td><span class="badge ${mfaBadge}">${mfaLabel}</span></td>
+      <td style="font-size:13px;color:var(--muted)">${date}</td>
+      <td><div class="actions-td">
+        <button class="act-btn act-edit" onclick="openUserModal(${u.id})">✏️ Editar</button>
+        ${!isSelf?`<button class="act-btn act-del" onclick="showConfirm('Eliminar usuario','¿Eliminar a ${u.email}?',()=>deleteUser(${u.id}))">🗑️</button>`:''}
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+let editUserId=null;
+
+function openUserModal(id=null){
+  editUserId=id;
+  document.getElementById('userModalTitle').textContent=id?'Editar Usuario':'Nuevo Usuario';
+  document.getElementById('uPwdLabel').textContent=id?'Nueva contraseña (dejar vacío para no cambiar)':'Contraseña *';
+  document.getElementById('uPassword').value='';
+  document.getElementById('uPasswordConfirm').value='';
+  if(id){
+    const u=getUsers().find(x=>x.id===id); if(!u) return;
+    document.getElementById('uEmail').value=u.email;
+    document.getElementById('uRole').value=u.role;
+  } else {
+    document.getElementById('uEmail').value='';
+    document.getElementById('uRole').value='admin';
+  }
+  document.getElementById('modalUser').classList.add('open');
+}
+function closeUserModal(){ document.getElementById('modalUser').classList.remove('open'); }
+
+async function saveUser(){
+  const email=document.getElementById('uEmail').value.trim().toLowerCase();
+  const role=document.getElementById('uRole').value;
+  const pwd=document.getElementById('uPassword').value;
+  const pwd2=document.getElementById('uPasswordConfirm').value;
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showToast('Ingresá un correo válido','error'); return; }
+  if(!editUserId && !pwd){ showToast('La contraseña es obligatoria para nuevos usuarios','error'); return; }
+  if(pwd && pwd.length<8){ showToast('La contraseña debe tener al menos 8 caracteres','error'); return; }
+  if(pwd && pwd!==pwd2){ showToast('Las contraseñas no coinciden','error'); return; }
+  const users=getUsers();
+  if(!editUserId && users.find(u=>u.email.toLowerCase()===email)){ showToast('Ya existe un usuario con ese correo','error'); return; }
+  if(editUserId){
+    const i=users.findIndex(u=>u.id===editUserId);
+    if(i<0) return;
+    users[i].email=email; users[i].role=role;
+    if(pwd){ const salt=genSalt(); users[i].salt=salt; users[i].passwordHash=await hashPwd(pwd,salt); }
+  } else {
+    const salt=genSalt();
+    const hash=await hashPwd(pwd,salt);
+    users.push({id:Math.max(0,...users.map(u=>u.id))+1,email,passwordHash:hash,salt,mfaEnabled:false,mfaSecret:'',mfaVerified:false,role,createdAt:new Date().toISOString()});
+  }
+  saveUsers(users); closeUserModal(); renderUsersTable();
+  showToast(editUserId?'✅ Usuario actualizado':'✅ Usuario creado');
+}
+function deleteUser(id){
+  saveUsers(getUsers().filter(u=>u.id!==id));
+  renderUsersTable(); showToast('🗑️ Usuario eliminado');
+}
+
+// ══════════════════════════════════════════
+//  PERFIL
+// ══════════════════════════════════════════
+let currentUser=null;
+
+function openProfile(){
+  document.getElementById('profileEmail').textContent=currentUser.email;
+  ['pCurrentPwd','pNewPwd','pConfirmPwd'].forEach(f=>document.getElementById(f).value='');
+  refreshMFAStatus();
+  document.getElementById('modalProfile').classList.add('open');
+}
+function closeProfile(){ document.getElementById('modalProfile').classList.remove('open'); }
+
+function refreshMFAStatus(){
+  const u=getUsers().find(x=>x.email===currentUser.email);
+  const el=document.getElementById('mfaStatusArea');
+  if(!u) return;
+  if(u.mfaEnabled){
+    el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--green-bg);border-radius:8px;padding:12px;">
+      <span style="font-size:14px;color:var(--green-dark);">✅ MFA activado</span>
+      <button class="btn btn-red" style="font-size:12px;padding:6px 12px" onclick="openMFADisable()">Desactivar</button>
+    </div>`;
+  } else {
+    el.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;background:#fff8e1;border-radius:8px;padding:12px;">
+      <span style="font-size:14px;color:#f57f17;">⚠️ MFA desactivado</span>
+      <button class="btn btn-blue" style="font-size:12px;padding:6px 12px" onclick="openMFASetup()">Activar MFA</button>
+    </div>`;
+  }
+}
+
+async function changePassword(){
+  const cur=document.getElementById('pCurrentPwd').value;
+  const nw=document.getElementById('pNewPwd').value;
+  const cf=document.getElementById('pConfirmPwd').value;
+  if(!cur||!nw||!cf){ showToast('Completá todos los campos','error'); return; }
+  if(nw.length<8){ showToast('La nueva contraseña debe tener al menos 8 caracteres','error'); return; }
+  if(nw!==cf){ showToast('Las contraseñas no coinciden','error'); return; }
+  const users=getUsers();
+  const i=users.findIndex(u=>u.email===currentUser.email);
+  if(i<0) return;
+  const curHash=await hashPwd(cur,users[i].salt);
+  if(curHash!==users[i].passwordHash){ showToast('Contraseña actual incorrecta','error'); return; }
+  const salt=genSalt();
+  users[i].salt=salt; users[i].passwordHash=await hashPwd(nw,salt);
+  saveUsers(users);
+  ['pCurrentPwd','pNewPwd','pConfirmPwd'].forEach(f=>document.getElementById(f).value='');
+  showToast('✅ Contraseña actualizada correctamente');
+}
+
+// ══════════════════════════════════════════
+//  MFA SETUP
+// ══════════════════════════════════════════
+let tempMFASecret='';
+
+async function openMFASetup(){
+  tempMFASecret=genTOTPSecret();
+  document.getElementById('mfaSecretDisplay').textContent=tempMFASecret;
+  document.getElementById('mfaVerifyCode').value='';
+  const url=totpQRUrl(currentUser.email, tempMFASecret);
+  const canvas=document.getElementById('mfaQR');
+  try{ await QRCode.toCanvas(canvas, url, {width:200,margin:2,color:{dark:'#1b5e20',light:'#f1f8e9'}}); }
+  catch(e){ canvas.style.display='none'; }
+  document.getElementById('modalMFASetup').classList.add('open');
+}
+function closeMFASetup(){ document.getElementById('modalMFASetup').classList.remove('open'); }
+
+async function verifyAndEnableMFA(){
+  const code=document.getElementById('mfaVerifyCode').value.trim();
+  if(code.length!==6||!/^\d+$/.test(code)){ showToast('Ingresá un código de 6 dígitos','error'); return; }
+  const ok=await verifyTOTP(tempMFASecret, code);
+  if(!ok){ showToast('Código incorrecto. Verificá la hora de tu dispositivo.','error'); return; }
+  const users=getUsers();
+  const i=users.findIndex(u=>u.email===currentUser.email);
+  users[i].mfaEnabled=true; users[i].mfaSecret=tempMFASecret; users[i].mfaVerified=true;
+  saveUsers(users);
+  currentUser=users[i];
+  closeMFASetup(); refreshMFAStatus();
+  showToast('🔐 MFA activado correctamente');
+}
+
+function openMFADisable(){ document.getElementById('mfaDisableCode').value=''; document.getElementById('modalMFADisable').classList.add('open'); }
+function closeMFADisable(){ document.getElementById('modalMFADisable').classList.remove('open'); }
+
+async function confirmDisableMFA(){
+  const code=document.getElementById('mfaDisableCode').value.trim();
+  const users=getUsers();
+  const u=users.find(x=>x.email===currentUser.email);
+  if(!u) return;
+  const ok=await verifyTOTP(u.mfaSecret, code);
+  if(!ok){ showToast('Código MFA incorrecto','error'); return; }
+  const i=users.findIndex(x=>x.email===currentUser.email);
+  users[i].mfaEnabled=false; users[i].mfaSecret=''; users[i].mfaVerified=false;
+  saveUsers(users); currentUser=users[i];
+  closeMFADisable(); refreshMFAStatus();
+  showToast('MFA desactivado');
+}
+
+// ══════════════════════════════════════════
+//  BASE PRODUCTS
+// ══════════════════════════════════════════
+const BASE_PRODUCTS = [
+  { id:1,  name:'Cuchillas Licuadora BL610',        ref:'311KKU',    barcode:'622356602983', category:'licuadora', price:39900,  icon:'🔪', desc:'Conjunto de 6 cuchillas apiladas. Alta resistencia y durabilidad. Compatible con jarras de 72 oz (BL740, 1100W).', stock:10, active:true, img:'' },
+  { id:2,  name:'Filtro Cafetera CFP301',            ref:'134KKW300', barcode:'622356572958', category:'cafetera',  price:119900, icon:'☕', desc:'Filtro permanente dorado para Ninja Dual Brew (Serie CFP). Plástico negro con mango ergonómico.', stock:10, active:true, img:'' },
+  { id:3,  name:'Jarra Licuadora BL610 72 oz',       ref:'518KKU610', barcode:'622356602976', category:'licuadora', price:79900,  icon:'🫙', desc:'Jarra con tapa 72 onzas (2.1 litros). Diseñada específicamente para Ninja BL610. Cierre seguro.', stock:10, active:true, img:'' },
+  { id:4,  name:'Cuchillas Jarra BN801',             ref:'316KKU770', barcode:'622356621465', category:'licuadora', price:19900,  icon:'🔪', desc:'Cuchillas apiladas para trituración total. Compatible con jarras Ninja de 72 oz.', stock:10, active:true, img:'' },
+  { id:5,  name:'Jarra Licuadora BN801 71 oz',       ref:'678KKU800', barcode:'622356562423', category:'licuadora', price:59900,  icon:'🫙', desc:'Jarra Total Crushing 71 OZ. Tecnología Auto-iQ, 1200W–1400W.', stock:10, active:true, img:'' },
+  { id:6,  name:'Cuchillas Vaso Personal BN801',     ref:'431KKU480', barcode:'622356561198', category:'licuadora', price:79900,  icon:'🔪', desc:'Cuchilla Pro Extractor 7 aletas con junta tórica. Evita fugas.', stock:10, active:true, img:'' },
+  { id:7,  name:'Cuchillas Procesador BN801',        ref:'319KKU770', barcode:'622356623629', category:'licuadora', price:69900,  icon:'⚙️', desc:'Repuesto cuchilla picadora 4 aspas en S. Compatible con BL642W, BL680A, BL770.', stock:10, active:true, img:'' },
+  { id:8,  name:'Vaso Personal BN801 23 oz',         ref:'679KKU800', barcode:'622356562430', category:'vasos',     price:39900,  icon:'🥤', desc:'Vaso 23 oz para porciones individuales. Libre de BPA, apto para lavavajillas.', stock:10, active:true, img:'' },
+  { id:9,  name:'Tazón Procesador BN801 63 oz',      ref:'684KKU800', barcode:'622356563130', category:'licuadora', price:189900, icon:'🫙', desc:'Repuesto tazón + tapa Precision Processor 63 oz. Para BN801, BN800, BN751, BL910.', stock:10, active:true, img:'' },
+  { id:10, name:'Tapa Vaso BN300',                   ref:'730KKU300', barcode:'622356621137', category:'vasos',     price:19900,  icon:'🎩', desc:'Tapa de pico para vaso personal. Sella herméticamente. Libre de BPA.', stock:10, active:true, img:'' },
+  { id:11, name:'Cesta Derecha Freidora DZ201',      ref:'129KY100',  barcode:'622356562638', category:'freidora',  price:129900, icon:'🍟', desc:'Canasta derecha freidora doble zona Ninja Foodi. Compatible con AD100A, DZ100, DZ201, DZ201Q.', stock:10, active:true, img:'' },
+  { id:12, name:'Cesta Izquierda Freidora DZ201',    ref:'128KY100',  barcode:'622356562621', category:'freidora',  price:124900, icon:'🍟', desc:'Canasta izquierda freidora doble zona Ninja Foodi. Compatible con AD100A, DZ100, DZ201, DZ201Q.', stock:10, active:true, img:'' },
+  { id:13, name:'Cesta Freidora AF101',              ref:'102KY100',  barcode:'622356570480', category:'freidora',  price:124900, icon:'🧺', desc:'Cesta cerámica antiadherente. Para Ninja AF101, AF100, AF100C.', stock:10, active:true, img:'' },
+  { id:14, name:'Plato Crujiente Freidoras',         ref:'103KY100',  barcode:'622356567367', category:'freidora',  price:39900,  icon:'🍽️', desc:'Para AF100, AF101, AF150, AF161. Revestimiento cerámico. Circulación de aire uniforme.', stock:10, active:true, img:'' },
+  { id:15, name:'Vaso 24 oz Nutri Ninja',            ref:'XSK24SP',   barcode:'622356546904', category:'vasos',     price:39900,  icon:'🥤', desc:'Vaso Tritan 24 oz con tapa de boquilla. 700 ml. Para BL641, BN401.', stock:10, active:true, img:'' },
+  { id:16, name:'Vaso 20 oz BN300 To-Go',            ref:'731KKU300', barcode:'622356621120', category:'vasos',     price:39900,  icon:'🥤', desc:'Vaso Ninja 20 oz To-Go Cup. Nutri Ninja BN300c. Tritan sin BPA.', stock:10, active:true, img:'' },
+  { id:17, name:'Vaso 18 oz Nutri Ninja',            ref:'XSK18SP',   barcode:'622356546911', category:'vasos',     price:64900,  icon:'🥤', desc:'Vaso Tritan 18 oz. Libre de BPA. Para BL641, BN401.', stock:10, active:true, img:'' },
+  { id:18, name:'Cuchillas Vaso BN300',              ref:'764KKU300', barcode:'622356583671', category:'licuadora', price:69900,  icon:'🔪', desc:'Cuchillas Pro Extractor. Acero inoxidable. Para BN300, BN300C, BN301, BN302Q.', stock:10, active:true, img:'' }
+];
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+function initApp(){
+  renderProductsTable();
+}
+
+async function boot(){
+  await ensureDefaultUser();
+  const session=getSession();
+  if(session){
+    const users=getUsers();
+    const u=users.find(x=>x.email===session.email);
+    if(u){
+      currentUser=u;
+      document.getElementById('screenLogin').classList.add('hidden');
+      document.getElementById('screenApp').classList.remove('hidden');
+      document.getElementById('headerEmail').textContent=u.email;
+      initApp();
+      return;
+    }
+  }
+  // show login
+}
+
+boot();
+</script>
+</body>
+</html>

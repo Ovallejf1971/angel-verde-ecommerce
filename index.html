@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Angel Verde — Accesorios Ninja Originales</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --green:      #2e7d32;
+  --green-light:#4caf50;
+  --green-dark: #1b5e20;
+  --green-bg:   #f1f8e9;
+  --white:      #ffffff;
+  --gray:       #f5f5f5;
+  --text:       #3a3a3a;
+  --muted:      #757575;
+  --border:     #e0e0e0;
+  --red:        #c62828;
+}
+body { font-family:'Roboto',sans-serif; color:var(--text); background:var(--gray); }
+
+/* ── HEADER ── */
+header {
+  background:var(--green-dark);
+  position:sticky; top:0; z-index:100;
+  box-shadow:0 2px 8px rgba(0,0,0,.3);
+}
+.header-inner {
+  max-width:1200px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 20px; gap:16px;
+}
+.logo-area { display:flex; align-items:center; gap:12px; text-decoration:none; }
+.logo-icon {
+  width:44px; height:44px; background:var(--green-light);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:22px;
+}
+.logo-text { color:var(--white); }
+.logo-text .brand { font-family:'Roboto Slab',serif; font-size:20px; letter-spacing:1px; }
+.logo-text .tagline { font-size:10px; opacity:.75; letter-spacing:2px; text-transform:uppercase; }
+.header-right { display:flex; align-items:center; gap:12px; }
+.search-box {
+  display:flex; align-items:center; gap:8px;
+  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
+  border-radius:24px; padding:6px 14px; color:var(--white);
+}
+.search-box input {
+  background:none; border:none; outline:none; color:var(--white);
+  font-size:14px; width:180px;
+}
+.search-box input::placeholder { color:rgba(255,255,255,.6); }
+.cart-btn {
+  position:relative; background:var(--green-light); border:none;
+  border-radius:24px; padding:8px 18px; color:var(--white);
+  font-size:14px; font-weight:700; cursor:pointer;
+  display:flex; align-items:center; gap:8px;
+  transition:background .2s;
+}
+.cart-btn:hover { background:var(--green); }
+.cart-count {
+  background:var(--red); color:var(--white);
+  border-radius:50%; width:20px; height:20px;
+  font-size:11px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* ── HERO ── */
+.hero {
+  background:linear-gradient(135deg,var(--green-dark) 0%,var(--green) 60%,var(--green-light) 100%);
+  color:var(--white); text-align:center; padding:48px 20px 40px;
+}
+.hero h1 { font-family:'Roboto Slab',serif; font-size:clamp(24px,5vw,42px); margin-bottom:10px; }
+.hero p { font-size:16px; opacity:.88; max-width:520px; margin:0 auto 24px; }
+.hero-badges { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+.badge {
+  background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.35);
+  border-radius:20px; padding:5px 14px; font-size:12px; letter-spacing:1px;
+}
+
+/* ── CATEGORÍAS ── */
+.categories {
+  max-width:1200px; margin:32px auto 0; padding:0 20px;
+  display:flex; gap:10px; flex-wrap:wrap;
+}
+.cat-btn {
+  border:2px solid var(--green); border-radius:20px;
+  padding:6px 18px; font-size:13px; font-weight:700;
+  background:var(--white); color:var(--green); cursor:pointer;
+  transition:all .2s;
+}
+.cat-btn:hover, .cat-btn.active {
+  background:var(--green); color:var(--white);
+}
+
+/* ── PRODUCTOS ── */
+.products-section { max-width:1200px; margin:20px auto 48px; padding:0 20px; }
+.section-title {
+  font-family:'Roboto Slab',serif; font-size:20px;
+  color:var(--green-dark); margin-bottom:20px;
+  padding-bottom:8px; border-bottom:2px solid var(--green-light);
+}
+.products-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:20px;
+}
+.product-card {
+  background:var(--white); border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+  overflow:hidden; display:flex; flex-direction:column;
+  transition:transform .2s, box-shadow .2s;
+}
+.product-card:hover { transform:translateY(-4px); box-shadow:0 8px 20px rgba(0,0,0,.15); }
+.product-card.hidden { display:none; }
+.product-img {
+  width:100%; height:160px; background:var(--green-bg);
+  display:flex; align-items:center; justify-content:center;
+  font-size:52px;
+}
+.product-body { padding:14px; flex:1; display:flex; flex-direction:column; }
+.product-category {
+  font-size:10px; text-transform:uppercase; letter-spacing:1.5px;
+  color:var(--green); font-weight:700; margin-bottom:4px;
+}
+.product-name { font-weight:700; font-size:14px; margin-bottom:4px; line-height:1.4; }
+.product-ref { font-size:11px; color:var(--muted); margin-bottom:6px; }
+.product-desc { font-size:12px; color:var(--muted); line-height:1.5; flex:1; margin-bottom:12px; }
+.product-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.product-price { font-family:'Roboto Slab',serif; font-size:20px; color:var(--green-dark); font-weight:700; }
+.add-btn {
+  background:var(--green); color:var(--white); border:none;
+  border-radius:8px; padding:8px 14px; font-size:13px; font-weight:700;
+  cursor:pointer; transition:background .2s; white-space:nowrap;
+}
+.add-btn:hover { background:var(--green-dark); }
+
+/* ── CART OVERLAY ── */
+.cart-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.5);
+  z-index:200; display:none; justify-content:flex-end;
+}
+.cart-overlay.open { display:flex; }
+.cart-panel {
+  background:var(--white); width:min(420px,100vw);
+  height:100%; display:flex; flex-direction:column;
+  box-shadow:-4px 0 20px rgba(0,0,0,.2);
+}
+.cart-header {
+  background:var(--green-dark); color:var(--white);
+  padding:16px 20px; display:flex; align-items:center; justify-content:space-between;
+}
+.cart-header h2 { font-family:'Roboto Slab',serif; font-size:18px; }
+.close-btn { background:none; border:none; color:var(--white); font-size:24px; cursor:pointer; }
+.cart-items { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
+.cart-empty { text-align:center; color:var(--muted); padding:40px 20px; }
+.cart-empty .big { font-size:48px; margin-bottom:12px; }
+.cart-item {
+  display:flex; gap:12px; align-items:flex-start;
+  padding:12px; background:var(--gray); border-radius:8px;
+}
+.cart-item-icon { font-size:28px; flex-shrink:0; }
+.cart-item-info { flex:1; }
+.cart-item-name { font-weight:700; font-size:13px; margin-bottom:2px; }
+.cart-item-ref { font-size:11px; color:var(--muted); }
+.cart-item-bottom { display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
+.cart-item-price { font-weight:700; color:var(--green-dark); font-size:14px; }
+.qty-controls { display:flex; align-items:center; gap:8px; }
+.qty-btn {
+  width:26px; height:26px; border-radius:50%; border:2px solid var(--green);
+  background:var(--white); color:var(--green); font-size:16px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:all .15s;
+}
+.qty-btn:hover { background:var(--green); color:var(--white); }
+.qty-num { font-weight:700; font-size:14px; min-width:20px; text-align:center; }
+.cart-footer { border-top:2px solid var(--border); padding:16px 20px; }
+.cart-total { display:flex; justify-content:space-between; font-size:16px; font-weight:700; margin-bottom:4px; }
+.cart-total-price { font-family:'Roboto Slab',serif; font-size:22px; color:var(--green-dark); }
+.cart-note { font-size:11px; color:var(--muted); margin-bottom:16px; }
+.whatsapp-btn {
+  width:100%; background:#25d366; color:var(--white); border:none;
+  border-radius:10px; padding:14px; font-size:16px; font-weight:700;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px;
+  transition:background .2s;
+}
+.whatsapp-btn:hover { background:#128c7e; }
+.clear-btn {
+  width:100%; background:none; border:1px solid var(--border);
+  border-radius:10px; padding:10px; font-size:13px; color:var(--muted);
+  cursor:pointer; margin-top:8px; transition:all .2s;
+}
+.clear-btn:hover { border-color:var(--red); color:var(--red); }
+
+/* ── FOOTER ── */
+footer {
+  background:var(--green-dark); color:rgba(255,255,255,.85);
+  text-align:center; padding:24px 20px; font-size:13px;
+}
+footer a { color:var(--green-light); text-decoration:none; }
+.footer-inner { max-width:800px; margin:0 auto; }
+.footer-inner p { margin-bottom:6px; }
+
+/* ── TOAST ── */
+.toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+  background:var(--green-dark); color:var(--white);
+  padding:12px 24px; border-radius:24px; font-weight:700;
+  font-size:14px; transition:transform .3s; z-index:300;
+  box-shadow:0 4px 16px rgba(0,0,0,.3);
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+@media(max-width:600px){
+  .search-box { display:none; }
+  .logo-text .tagline { display:none; }
+  .hero { padding:32px 16px 28px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a class="logo-area" href="#">
+      <div class="logo-icon">🌿</div>
+      <div class="logo-text">
+        <div class="brand">Angel Verde</div>
+        <div class="tagline">Accesorios Ninja Originales</div>
+      </div>
+    </a>
+    <div class="header-right">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Buscar accesorio..." oninput="filterProducts()">
+      </div>
+      <button class="cart-btn" onclick="openCart()">
+        🛒 Carrito
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Accesorios Ninja Originales</h1>
+  <p>Distribuidor exclusivo de repuestos y accesorios para tus electrodomésticos Ninja. Calidad garantizada.</p>
+  <div class="hero-badges">
+    <span class="badge">✅ 100% Originales</span>
+    <span class="badge">🚚 Envío a todo Colombia</span>
+    <span class="badge">🛡️ Garantía Ninja</span>
+    <span class="badge">💬 Atención por WhatsApp</span>
+  </div>
+</div>
+
+<!-- CATEGORÍAS -->
+<div class="categories">
+  <button class="cat-btn active" onclick="filterCategory('all',this)">Todos</button>
+  <button class="cat-btn" onclick="filterCategory('licuadora',this)">🫙 Licuadoras</button>
+  <button class="cat-btn" onclick="filterCategory('freidora',this)">🍟 Freidoras</button>
+  <button class="cat-btn" onclick="filterCategory('cafetera',this)">☕ Cafeteras</button>
+  <button class="cat-btn" onclick="filterCategory('vasos',this)">🥤 Vasos</button>
+</div>
+
+<!-- PRODUCTOS -->
+<div class="products-section">
+  <p class="section-title" id="sectionTitle">Todos los productos</p>
+  <div class="products-grid" id="productsGrid"></div>
+</div>
+
+<!-- CARRITO OVERLAY -->
+<div class="cart-overlay" id="cartOverlay" onclick="handleOverlayClick(event)">
+  <div class="cart-panel">
+    <div class="cart-header">
+      <h2>🛒 Tu Carrito</h2>
+      <button class="close-btn" onclick="closeCart()">✕</button>
+    </div>
+    <div class="cart-items" id="cartItems">
+      <div class="cart-empty">
+        <div class="big">🛒</div>
+        <p>Tu carrito está vacío</p>
+      </div>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span>Total:</span>
+        <span class="cart-total-price" id="cartTotal">$ 0</span>
+      </div>
+      <p class="cart-note">💬 Cerramos la venta por WhatsApp — te confirmamos disponibilidad y envío.</p>
+      <button class="whatsapp-btn" onclick="sendToWhatsApp()">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.504 3.935 1.39 5.61L0 24l6.545-1.717A11.955 11.955 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.374l-.36-.214-3.724.977.995-3.632-.234-.373A9.818 9.818 0 112 12 9.818 9.818 0 0112 21.818z"/></svg>
+        Pedir por WhatsApp
+      </button>
+      <button class="clear-btn" onclick="clearCart()">Vaciar carrito</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <p>🌿 <strong>Angel Verde</strong> — Accesorios Ninja Originales</p>
+    <p>Aliado de <a href="https://redelecservicio.com.co/" target="_blank">Redelec Servicio S.A.</a> — Distribuidor Exclusivo Ninja Colombia</p>
+    <p style="margin-top:10px; opacity:.6; font-size:11px;">Los precios incluyen IVA · Sujetos a disponibilidad de inventario</p>
+  </div>
+</footer>
+
+<script>
+// ── PRODUCTOS — se leen desde el admin (localStorage) ──
+const BASE_PRODUCTS = [
+  { id:1,  name:'Cuchillas Licuadora BL610',        ref:'311KKU',    barcode:'622356602983', category:'licuadora', price:39900,  icon:'🔪', desc:'Conjunto de 6 cuchillas apiladas. Alta resistencia y durabilidad. Compatible con jarras de 72 oz (BL740, 1100W).', stock:10, active:true, img:'' },
+  { id:2,  name:'Filtro Cafetera CFP301',            ref:'134KKW300', barcode:'622356572958', category:'cafetera',  price:119900, icon:'☕', desc:'Filtro permanente dorado para Ninja Dual Brew (Serie CFP). Plástico negro con mango ergonómico.', stock:10, active:true, img:'' },
+  { id:3,  name:'Jarra Licuadora BL610 72 oz',       ref:'518KKU610', barcode:'622356602976', category:'licuadora', price:79900,  icon:'🫙', desc:'Jarra con tapa 72 onzas (2.1 litros). Diseñada específicamente para Ninja BL610. Cierre seguro.', stock:10, active:true, img:'' },
+  { id:4,  name:'Cuchillas Jarra BN801',             ref:'316KKU770', barcode:'622356621465', category:'licuadora', price:19900,  icon:'🔪', desc:'Cuchillas apiladas para trituración total. Compatible con jarras Ninja de 72 oz.', stock:10, active:true, img:'' },
+  { id:5,  name:'Jarra Licuadora BN801 71 oz',       ref:'678KKU800', barcode:'622356562423', category:'licuadora', price:59900,  icon:'🫙', desc:'Jarra Total Crushing 71 OZ. Tecnología Auto-iQ, 1200W–1400W.', stock:10, active:true, img:'' },
+  { id:6,  name:'Cuchillas Vaso Personal BN801',     ref:'431KKU480', barcode:'622356561198', category:'licuadora', price:79900,  icon:'🔪', desc:'Cuchilla Pro Extractor 7 aletas con junta tórica. Evita fugas.', stock:10, active:true, img:'' },
+  { id:7,  name:'Cuchillas Procesador BN801',        ref:'319KKU770', barcode:'622356623629', category:'licuadora', price:69900,  icon:'⚙️', desc:'Repuesto cuchilla picadora 4 aspas en S. Compatible con BL642W, BL680A, BL770.', stock:10, active:true, img:'' },
+  { id:8,  name:'Vaso Personal BN801 23 oz',         ref:'679KKU800', barcode:'622356562430', category:'vasos',     price:39900,  icon:'🥤', desc:'Vaso 23 oz para porciones individuales. Libre de BPA, apto para lavavajillas.', stock:10, active:true, img:'' },
+  { id:9,  name:'Tazón Procesador BN801 63 oz',      ref:'684KKU800', barcode:'622356563130', category:'licuadora', price:189900, icon:'🫙', desc:'Repuesto tazón + tapa Precision Processor 63 oz. Para BN801, BN800, BN751, BL910.', stock:10, active:true, img:'' },
+  { id:10, name:'Tapa Vaso BN300',                   ref:'730KKU300', barcode:'622356621137', category:'vasos',     price:19900,  icon:'🎩', desc:'Tapa de pico para vaso personal. Sella herméticamente. Libre de BPA.', stock:10, active:true, img:'' },
+  { id:11, name:'Cesta Derecha Freidora DZ201',      ref:'129KY100',  barcode:'622356562638', category:'freidora',  price:129900, icon:'🍟', desc:'Canasta derecha freidora doble zona Ninja Foodi. Compatible con AD100A, DZ100, DZ201, DZ201Q.', stock:10, active:true, img:'' },
+  { id:12, name:'Cesta Izquierda Freidora DZ201',    ref:'128KY100',  barcode:'622356562621', category:'freidora',  price:124900, icon:'🍟', desc:'Canasta izquierda freidora doble zona Ninja Foodi. Compatible con AD100A, DZ100, DZ201, DZ201Q.', stock:10, active:true, img:'' },
+  { id:13, name:'Cesta Freidora AF101',              ref:'102KY100',  barcode:'622356570480', category:'freidora',  price:124900, icon:'🧺', desc:'Cesta cerámica antiadherente. Para Ninja AF101, AF100, AF100C.', stock:10, active:true, img:'' },
+  { id:14, name:'Plato Crujiente Freidoras',         ref:'103KY100',  barcode:'622356567367', category:'freidora',  price:39900,  icon:'🍽️', desc:'Para AF100, AF101, AF150, AF161. Revestimiento cerámico. Circulación de aire uniforme.', stock:10, active:true, img:'' },
+  { id:15, name:'Vaso 24 oz Nutri Ninja',            ref:'XSK24SP',   barcode:'622356546904', category:'vasos',     price:39900,  icon:'🥤', desc:'Vaso Tritan 24 oz con tapa de boquilla. 700 ml. Para BL641, BN401.', stock:10, active:true, img:'' },
+  { id:16, name:'Vaso 20 oz BN300 To-Go',            ref:'731KKU300', barcode:'622356621120', category:'vasos',     price:39900,  icon:'🥤', desc:'Vaso Ninja 20 oz To-Go Cup. Nutri Ninja BN300c. Tritan sin BPA.', stock:10, active:true, img:'' },
+  { id:17, name:'Vaso 18 oz Nutri Ninja',            ref:'XSK18SP',   barcode:'622356546911', category:'vasos',     price:64900,  icon:'🥤', desc:'Vaso Tritan 18 oz. Libre de BPA. Para BL641, BN401.', stock:10, active:true, img:'' },
+  { id:18, name:'Cuchillas Vaso BN300',              ref:'764KKU300', barcode:'622356583671', category:'licuadora', price:69900,  icon:'🔪', desc:'Cuchillas Pro Extractor. Acero inoxidable. Para BN300, BN300C, BN301, BN302Q.', stock:10, active:true, img:'' }
+];
+
+function getProducts(){
+  const saved = localStorage.getItem('av_products');
+  if(saved) return JSON.parse(saved).filter(p=>p.active && p.stock > 0);
+  return BASE_PRODUCTS.filter(p=>p.active && p.stock > 0);
+}
+
+const PRODUCTS = getProducts();
+
+// ── CARRITO ──
+let cart = {};
+
+function formatPrice(n){ return '$ ' + n.toLocaleString('es-CO'); }
+
+function updateCartCount(){
+  const total = Object.values(cart).reduce((s,i)=>s+i.qty,0);
+  document.getElementById('cartCount').textContent = total;
+}
+
+function addToCart(id){
+  const p = PRODUCTS.find(x=>x.id===id);
+  if(!p) return;
+  if(cart[id]) cart[id].qty++;
+  else cart[id] = { ...p, qty:1 };
+  updateCartCount();
+  showToast('✅ ' + p.name + ' agregado');
+  renderCart();
+}
+
+function removeFromCart(id){
+  if(cart[id]){
+    cart[id].qty--;
+    if(cart[id].qty <= 0) delete cart[id];
+  }
+  updateCartCount();
+  renderCart();
+}
+
+function clearCart(){
+  cart = {};
+  updateCartCount();
+  renderCart();
+}
+
+function renderCart(){
+  const el = document.getElementById('cartItems');
+  const keys = Object.keys(cart);
+  if(keys.length === 0){
+    el.innerHTML = '<div class="cart-empty"><div class="big">🛒</div><p>Tu carrito está vacío</p></div>';
+    document.getElementById('cartTotal').textContent = '$ 0';
+    return;
+  }
+  let total = 0;
+  el.innerHTML = keys.map(id=>{
+    const item = cart[id];
+    total += item.price * item.qty;
+    return `<div class="cart-item">
+      <div class="cart-item-icon">${item.icon}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-ref">Ref: ${item.ref}</div>
+        <div class="cart-item-bottom">
+          <div class="cart-item-price">${formatPrice(item.price * item.qty)}</div>
+          <div class="qty-controls">
+            <button class="qty-btn" onclick="removeFromCart(${id})">−</button>
+            <span class="qty-num">${item.qty}</span>
+            <button class="qty-btn" onclick="addToCart(${id})">+</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('cartTotal').textContent = formatPrice(total);
+}
+
+function sendToWhatsApp(){
+  const keys = Object.keys(cart);
+  if(keys.length === 0){ showToast('⚠️ El carrito está vacío'); return; }
+  let msg = '¡Hola Angel Verde! 👋 Quisiera hacer un pedido:\n\n';
+  let total = 0;
+  keys.forEach(id=>{
+    const item = cart[id];
+    total += item.price * item.qty;
+    msg += `• ${item.name} (x${item.qty}) — ${formatPrice(item.price * item.qty)}\n`;
+  });
+  msg += `\n*TOTAL: ${formatPrice(total)}*\n\nPor favor confirmen disponibilidad y costo de envío. ¡Gracias!`;
+  const phone = localStorage.getItem('av_waphone') || '573001234567';
+  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function openCart(){ document.getElementById('cartOverlay').classList.add('open'); }
+function closeCart(){ document.getElementById('cartOverlay').classList.remove('open'); }
+function handleOverlayClick(e){ if(e.target === document.getElementById('cartOverlay')) closeCart(); }
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+// ── FILTROS ──
+let currentCategory = 'all';
+
+function filterCategory(cat, btn){
+  currentCategory = cat;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const titles = {all:'Todos los productos',licuadora:'Licuadoras',freidora:'Freidoras',cafetera:'Cafeteras',vasos:'Vasos'};
+  document.getElementById('sectionTitle').textContent = titles[cat] || 'Productos';
+  applyFilters();
+}
+
+function filterProducts(){ applyFilters(); }
+
+function applyFilters(){
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('.product-card').forEach(card=>{
+    const cat = card.dataset.category;
+    const name = card.dataset.name;
+    const matchCat = currentCategory === 'all' || cat === currentCategory;
+    const matchSearch = !q || name.includes(q) || card.dataset.ref.includes(q);
+    card.classList.toggle('hidden', !(matchCat && matchSearch));
+  });
+}
+
+// ── RENDER PRODUCTOS ──
+function renderProducts(){
+  const grid = document.getElementById('productsGrid');
+  grid.innerHTML = PRODUCTS.map(p=>`
+    <div class="product-card" data-category="${p.category}" data-name="${p.name.toLowerCase()}" data-ref="${p.ref.toLowerCase()}">
+      <div class="product-img">${p.img ? `<img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;">` : p.icon}</div>
+      <div class="product-body">
+        <div class="product-category">${{licuadora:'🫙 Licuadora',freidora:'🍟 Freidora',cafetera:'☕ Cafetera',vasos:'🥤 Vasos'}[p.category]}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-ref">Ref: ${p.ref} · Cód: ${p.barcode}</div>
+        <div class="product-desc">${p.desc}</div>
+        <div class="product-footer">
+          <div class="product-price">${formatPrice(p.price)}</div>
+          <button class="add-btn" onclick="addToCart(${p.id})">+ Agregar</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+renderProducts();
+</script>
+</body>
+</html>
